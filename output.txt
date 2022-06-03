@@ -1,0 +1,10 @@
+Resultados Finais:
+Match Max:
+4
+Substrings que maximizaram o match:
+Seq A:
+GT
+Seq B:
+GT
+
+EOF
