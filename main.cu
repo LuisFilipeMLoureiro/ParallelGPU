@@ -50,14 +50,6 @@ vector<string> subs_generator(string DNA, int size){
     return lista_subs;
 }
 
-int calculadora(string seqA, string seqB){
-  int valor = 0;
-  int contador = seqA.size();
-  for (int i = 0; i < contador; i++){
-    valor += calcula_valor(seqA[i], seqB[i]);
-  }
-  return valor;
-}
 
 int main()
 {
@@ -89,7 +81,7 @@ int main()
     all_SeqB = subs_generator(SeqB, m);
 
 
-    int cand_SeqA, cand_SeqB, id, contador, candidato;
+    int cand_SeqA, cand_SeqB, id, contador, candidato, Asize, Bsize;
     string finalSeqA, finalSeqB; 
     contador = 0;
     cand_SeqA = 0;
@@ -131,7 +123,7 @@ int main()
                         int score = thrust::reduce(MatchVec.begin(), MatchVec.end(),0, thrust::plus<int>());
                         
                         if (score > match) {
-                            match = score
+                            match = score;
                         }
                     }
                 }
