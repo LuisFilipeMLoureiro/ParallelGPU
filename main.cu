@@ -22,7 +22,7 @@ struct custom_transform
 
         return -1;
     }
-}
+};
 
 
 
@@ -45,14 +45,7 @@ vector<string> subs_generator(string DNA, int size){
     return lista_subs;
 }
 
-int calculadora(string seqA, string seqB){
-  int valor = 0;
-  int contador = seqA.size();
-  for (int i = 0; i < contador; i++){
-    valor += calcula_valor(seqA[i], seqB[i]);
-  }
-  return valor;
-}
+
 
 int main()
 {
@@ -84,7 +77,7 @@ int main()
     all_SeqB = subs_generator(SeqB, m);
 
 
-    int cand_SeqA, cand_SeqB, id, contador, candidato;
+    int cand_SeqA, cand_SeqB, id, contador, candidato, Asize, Bsize;
     string finalSeqA, finalSeqB; 
     contador = 0;
     cand_SeqA = 0;
@@ -102,31 +95,39 @@ int main()
     std::sort(all_SeqB.begin(), all_SeqB.end());
     all_SeqB.erase(std::unique(all_SeqB.begin(), all_SeqB.end()), all_SeqB.end());
 
-    thrust::device_vector<string> SeqA_GPU(SeqA);
-    thrust::device_vector<string> SeqB_GPU(SeqB);
-    thrust::device_vector<int> MatchVec(size, 0);
+    thrust::device_vector<char> SeqA_GPU(n);
+    thrust::device_vector<char> SeqB_GPU(m);
+    thrust::device_vector<int> MatchVec(m);
 
 
-    for(int i = 0; i < size; i++){
-        for(int j = i + 1; j < size; j++){
+for(int r=0; r<n; r++){
+	SeqA_GPU[r] = SeqA[r];		
+}
+	for(int y=0; y<m;y++){
+	SeqB_GPU[y] = SeqB[y];
+}
+
+    for(int i = 0; i < n; i++){
+        for(int j = i + 1; j < n; j++){
 
             Asize = j - i;
 
-            for (int i_B = 0; i_B < size; i_B++) {
+            for (int i_B = 0; i_B < m; i_B++) {
 
-                for (int j_B = i_B + 1; j_B < size; j_B++){
+                for (int j_B = i_B + 1; j_B < m; j_B++){
 
 
                     Bsize = j_B - i_B;
 
                     if (Asize == Bsize) {
-
+			cout << SeqA[i];
+			cout << SeqB[j];
                         thrust::transform(SeqA_GPU.begin() + i, SeqA_GPU.begin() + j, SeqB_GPU.begin() + i_B, MatchVec.begin(), custom_transform());
 
                         int score = thrust::reduce(MatchVec.begin(), MatchVec.end(),0, thrust::plus<int>());
                         
                         if (score > match) {
-                            match = score
+                            match = score;
                         }
                     }
                 }
@@ -147,3 +148,4 @@ int main()
 
     return 0;
 }
+
