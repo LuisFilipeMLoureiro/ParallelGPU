@@ -13,8 +13,6 @@ using namespace std;
 
 struct custom_transform
 {
-
-    custom_transform()
     __host__ __device__
 
     double operator()(const char &a, const char &b)
@@ -99,8 +97,8 @@ int main()
     std::sort(all_SeqB.begin(), all_SeqB.end());
     all_SeqB.erase(std::unique(all_SeqB.begin(), all_SeqB.end()), all_SeqB.end());
 
-    thrust::device_vector<string> SeqA_GPU(SeqA);
-    thrust::device_vector<string> SeqB_GPU(SeqB);
+    thrust::device_vector<char> SeqA_GPU(SeqA);
+    thrust::device_vector<char> SeqB_GPU(SeqB);
     thrust::device_vector<int> MatchVec(n);
 
 
