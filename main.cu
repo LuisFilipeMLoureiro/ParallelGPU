@@ -22,7 +22,7 @@ struct custom_transform
 {
     __host__ __device__
 
-    double operator()(const char& a, const char& b)
+    double operator()(const char &a, const char &b)
     { 
         if (a == b)
         {
@@ -116,6 +116,10 @@ int main()
     cand_SeqA = 0;
     cand_SeqB = 0;
     int match = 0;
+
+
+
+
    
 
 
@@ -132,17 +136,21 @@ int main()
     vector<Indexes> IndexSeqA = index_generator(SeqA, n);
     vector<Indexes> IndexSeqB = index_generator(SeqB, m);
 
-    thrust::device_vector<char> SeqA_GPU(n);
-    thrust::device_vector<char> SeqB_GPU(m);
+
+    vector<char> VSeqA;
+    vector<char> VSeqB;
+
+    for(auto&A:SeqA){
+    	VSeqA.push_back(A);		
+    }
+    for(auto&B:SeqB){
+    	VSeqB.push_back(B);
+    }
+
+
+    thrust::device_vector<char> SeqA_GPU(VSeqA);
+    thrust::device_vector<char> SeqB_GPU(VSeqB);
     thrust::device_vector<int> MatchVec(m);
-
-
-    for(int r=0; r<n; r++){
-    	SeqA_GPU[r] = SeqA[r];		
-    }
-    for(int y=0; y<m;y++){
-    	SeqB_GPU[y] = SeqB[y];
-    }
 
 
 
@@ -152,8 +160,6 @@ int main()
         {
             if (Seq_A.size == Seq_B.size)
             {
-                cout << SeqA[i];
-                cout << SeqB[j];
                 thrust::transform(SeqA_GPU.begin() + Seq_A.i, SeqA_GPU.begin() + Seq_A.j, SeqB_GPU.begin() + Seq_B.i, MatchVec.begin(), custom_transform());
 
                 int score = thrust::reduce(MatchVec.begin(), MatchVec.end(),0, thrust::plus<int>());
