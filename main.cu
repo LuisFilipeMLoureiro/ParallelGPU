@@ -1,15 +1,22 @@
 #include <iostream>
+#include<random>
 #include <algorithm>
 #include <thrust/transform.h>
 #include <thrust/reduce.h>
 #include <thrust/device_vector.h>
-#include <vector>
-#include <string>
-
-
 
 
 using namespace std;
+
+
+struct Indexes{
+
+    int i;
+    int j;
+    int size;
+};
+
+
 
 struct custom_transform
 {
@@ -48,6 +55,30 @@ vector<string> subs_generator(string DNA, int size){
     return lista_subs;
 }
 
+vector<Indexes> index_generator(string DNA, int size)
+{
+
+    vector<Indexes> IndexList;
+    Indexes index;
+
+    for (int i = 0; i < size; i++)
+    {
+        for (int j = i + 1; j < size; j++)
+        {
+            index.i = i;
+            index.j = j;
+            index.size = j - i;
+
+            IndexList.push_back(index);
+        }
+    }
+
+
+    return IndexList;
+
+}
+
+
 
 int main()
 {
@@ -85,6 +116,10 @@ int main()
     cand_SeqA = 0;
     cand_SeqB = 0;
     int match = 0;
+
+
+
+
    
 
 
@@ -97,40 +132,46 @@ int main()
     std::sort(all_SeqB.begin(), all_SeqB.end());
     all_SeqB.erase(std::unique(all_SeqB.begin(), all_SeqB.end()), all_SeqB.end());
 
-    thrust::device_vector<char> SeqA_GPU(SeqA);
-    thrust::device_vector<char> SeqB_GPU(SeqB);
-    thrust::device_vector<int> MatchVec(n);
+
+    vector<Indexes> IndexSeqA = index_generator(SeqA, n);
+    vector<Indexes> IndexSeqB = index_generator(SeqB, m);
 
 
-    for(int i = 0; i < n; i++){
-        for(int j = i + 1; j < n; j++){
+    vector<char> VSeqA;
+    vector<char> VSeqB;
 
-            Asize = j - i;
+    for(auto&A:SeqA){
+    	VSeqA.push_back(A);		
+    }
+    for(auto&B:SeqB){
+    	VSeqB.push_back(B);
+    }
 
-            for (int i_B = 0; i_B < m; i_B++) {
 
-                for (int j_B = i_B + 1; j_B < m; j_B++){
+    thrust::device_vector<char> SeqA_GPU(VSeqA);
+    thrust::device_vector<char> SeqB_GPU(VSeqB);
+    thrust::device_vector<int> MatchVec(m);
 
 
-                    Bsize = j_B - i_B;
 
-                    if (Asize == Bsize) {
+    for (auto&Seq_A:IndexSeqA)
+    {
+        for(auto&Seq_B:IndexSeqB)
+        {
+            if (Seq_A.size == Seq_B.size)
+            {
+                thrust::transform(SeqA_GPU.begin() + Seq_A.i, SeqA_GPU.begin() + Seq_A.j, SeqB_GPU.begin() + Seq_B.i, MatchVec.begin(), custom_transform());
 
-                        thrust::transform(SeqA_GPU.begin() + i, SeqA_GPU.begin() + j, SeqB_GPU.begin() + i_B, MatchVec.begin(), custom_transform());
-
-                        int score = thrust::reduce(MatchVec.begin(), MatchVec.end(),0, thrust::plus<int>());
-                        
-                        if (score > match) {
-                            match = score;
-                        }
-                    }
+                int score = thrust::reduce(MatchVec.begin(), MatchVec.end(),0, thrust::plus<int>());
+                
+                if (score > match)
+                {
+                    match = score;
                 }
-            }   
+            }
         }
     }
-    
 
-    
 
     cout << "Resultados Finais:"<< endl;
     cout << "Match Max:"<< endl;
@@ -142,3 +183,4 @@ int main()
 
     return 0;
 }
+
